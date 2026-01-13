@@ -1,0 +1,125 @@
+.container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 20px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.stat:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 240, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.success {
+  border-color: rgba(57, 255, 20, 0.3);
+}
+
+.success:hover {
+  border-color: rgba(57, 255, 20, 0.5);
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+}
+
+.failure {
+  border-color: rgba(255, 7, 58, 0.3);
+}
+
+.failure:hover {
+  border-color: rgba(255, 7, 58, 0.5);
+  box-shadow: 0 0 20px rgba(255, 7, 58, 0.2);
+}
+
+.statIcon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 18px;
+  color: white;
+  font-weight: 700;
+}
+
+.progressSection {
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.progressPercent {
+  color: #00f0ff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.progressBar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00f0ff, #ff00ff);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

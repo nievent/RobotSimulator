@@ -1,0 +1,132 @@
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  border: 2px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.cell {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(0, 240, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.cell:hover {
+  background: rgba(0, 240, 255, 0.05);
+  border-color: rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+.editable {
+  cursor: pointer !important;
+}
+
+.editable:hover {
+  background: rgba(0, 240, 255, 0.1) !important;
+  border-color: rgba(0, 240, 255, 0.7) !important;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.5) !important;
+  transform: scale(1.05);
+}
+
+.coords {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 10px;
+  color: rgba(0, 240, 255, 0.5);
+  font-weight: 600;
+}
+
+.obstacle {
+  background: rgba(255, 0, 255, 0.1);
+  border-color: rgba(255, 0, 255, 0.4);
+}
+
+.obstacle:hover {
+  background: rgba(255, 0, 255, 0.15);
+  border-color: rgba(255, 0, 255, 0.6);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+}
+
+.obstacleIcon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.6));
+}
+
+.robotCell {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+}
+
+.robot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.robotBody {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00f0ff, #ff00ff);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.robotArrow {
+  font-size: 28px;
+  color: black;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cell {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .robotBody {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .robotArrow {
+    font-size: 22px;
+  }
+  
+  .obstacleIcon {
+    font-size: 24px;
+  }
+}
