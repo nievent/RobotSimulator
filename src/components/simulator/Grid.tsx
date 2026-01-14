@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Robot3D from './Robot3D'
 import styles from './Grid.module.css'
 
 interface GridProps {
@@ -8,16 +9,18 @@ interface GridProps {
   isAnimating?: boolean
   isEditMode?: boolean
   onCellClick?: (x: number, y: number) => void
+  lastCommandSuccess?: boolean
 }
 
-const DIRECTION_ARROWS = {
-  Norte: '↑',
-  Este: '→',
-  Sur: '↓',
-  Oeste: '←'
-}
-
-export default function Grid({ robotPosition, robotDirection, obstacles, isAnimating, isEditMode, onCellClick }: GridProps) {
+export default function Grid({ 
+  robotPosition, 
+  robotDirection, 
+  obstacles, 
+  isAnimating, 
+  isEditMode, 
+  onCellClick,
+  lastCommandSuccess 
+}: GridProps) {
   const isObstacle = (x: number, y: number) => {
     return obstacles.some(obs => obs.x === x && obs.y === y)
   }
@@ -64,25 +67,24 @@ export default function Grid({ robotPosition, robotDirection, obstacles, isAnima
                   </motion.div>
                 )}
                 
-                {/* Robot */}
+                {/* Robot 3D */}
                 {hasRobot && (
                   <motion.div
+                    key={`robot-${robotPosition.x}-${robotPosition.y}`}
                     className={styles.robot}
                     initial={{ scale: 0 }}
-                    animate={{ 
-                      scale: 1,
-                      rotate: isAnimating ? 360 : 0 
-                    }}
+                    animate={{ scale: 1 }}
                     transition={{ 
-                      scale: { type: "spring", stiffness: 260, damping: 20 },
-                      rotate: { duration: 0.5 }
+                      type: "spring", 
+                      stiffness: 300, 
+                      damping: 20 
                     }}
                   >
-                    <div className={styles.robotBody}>
-                      <span className={styles.robotArrow}>
-                        {DIRECTION_ARROWS[robotDirection]}
-                      </span>
-                    </div>
+                    <Robot3D 
+                      direction={robotDirection} 
+                      isAnimating={isAnimating}
+                      lastCommandSuccess={lastCommandSuccess}
+                    />
                   </motion.div>
                 )}
               </motion.div>

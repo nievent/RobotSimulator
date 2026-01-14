@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import DarkVeil from '@/components/DarkVeil'
 import Grid from '@/components/simulator/Grid'
 import SimulationStats from '@/components/simulator/SimulationStats'
 import { simulateRobot } from '@/lib/actions/simulate'
+import { createClient } from '@/lib/supabase/client'
 import styles from './simulator.module.css'
 
 type Position = { x: number; y: number }
@@ -13,11 +15,12 @@ type Direction = 'Norte' | 'Este' | 'Sur' | 'Oeste'
 
 const DIRECTIONS: Direction[] = ['Norte', 'Este', 'Sur', 'Oeste']
 
-// Generar exactamente 3 obstáculos aleatorios
+// Generar obstáculos aleatorios de 2 a 5
 function generateRandomObstacles(): Position[] {
+  const numObstacles = Math.floor(Math.random() * 4) + 2 // 2-5 obstáculos
   const obstacles: Position[] = []
   
-  while (obstacles.length < 3) {
+  while (obstacles.length < numObstacles) {
     const x = Math.floor(Math.random() * 5)
     const y = Math.floor(Math.random() * 5)
     
@@ -34,6 +37,7 @@ function generateRandomObstacles(): Position[] {
 }
 
 export default function SimulatorPage() {
+  const router = useRouter()
   const [obstacles, setObstacles] = useState<Position[]>(() => generateRandomObstacles())
   const [isEditMode, setIsEditMode] = useState(false)
   const [robotPosition, setRobotPosition] = useState<Position>({ x: 0, y: 0 })
@@ -43,6 +47,35 @@ export default function SimulatorPage() {
   const [commandHistory, setCommandHistory] = useState<string>('')
   const [lastCommand, setLastCommand] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
+  const [lastCommandSuccess, setLastCommandSuccess] = useState<boolean | undefined>(undefined)
+
+  // Verificar sesión al montar
+  useEffect(() => {
+    const supabase = createClient()
+    
+    // Verificar sesión actual
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+      }
+    }
+    
+    checkSession()
+
+    // Escuchar cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        if (event === 'SIGNED_OUT') {
+          router.push('/login')
+        }
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [router])
 
   // Girar a la izquierda
   const turnLeft = useCallback(() => {
@@ -53,6 +86,7 @@ export default function SimulatorPage() {
     setSuccesses(prev => prev + 1)
     setCommandHistory(prev => prev + 'I')
     setLastCommand('I - Giro izquierda ✓')
+    setLastCommandSuccess(true)
   }, [])
 
   // Girar a la derecha
@@ -64,6 +98,7 @@ export default function SimulatorPage() {
     setSuccesses(prev => prev + 1)
     setCommandHistory(prev => prev + 'D')
     setLastCommand('D - Giro derecha ✓')
+    setLastCommandSuccess(true)
   }, [])
 
   // Avanzar
@@ -82,6 +117,7 @@ export default function SimulatorPage() {
       setFailures(f => f + 1)
       setCommandHistory(h => h + 'A')
       setLastCommand('A - Choque con borde ✗')
+      setLastCommandSuccess(false)
       return // No se mueve
     }
 
@@ -91,6 +127,7 @@ export default function SimulatorPage() {
       setFailures(f => f + 1)
       setCommandHistory(h => h + 'A')
       setLastCommand('A - Choque con obstáculo ✗')
+      setLastCommandSuccess(false)
       return // No se mueve
     }
 
@@ -99,6 +136,7 @@ export default function SimulatorPage() {
     setSuccesses(s => s + 1)
     setCommandHistory(h => h + 'A')
     setLastCommand('A - Avance exitoso ✓')
+    setLastCommandSuccess(true)
   }, [robotDirection, robotPosition, obstacles])
 
   // Event listener para el teclado (solo si NO está en modo edición)
@@ -152,8 +190,8 @@ export default function SimulatorPage() {
       return
     }
 
-    // Si hay menos de 3 obstáculos, añadir uno nuevo
-    if (obstacles.length < 3) {
+    // Si hay menos de 5 obstáculos, añadir uno nuevo
+    if (obstacles.length < 5) {
       setObstacles([...obstacles, { x, y }])
     }
   }
@@ -170,6 +208,13 @@ export default function SimulatorPage() {
     } catch (error) {
       alert('Error al guardar: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     }
+  }
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
   }
 
   return (
@@ -195,9 +240,14 @@ export default function SimulatorPage() {
             <span className={styles.titleIcon}>🤖</span>
             ROBOT SIMULATOR
           </h1>
-          <p className={styles.subtitle}>
-            Usa las teclas para controlar el robot en tiempo real
-          </p>
+          <div className={styles.headerActions}>
+            <p className={styles.subtitle}>
+              Usa las teclas para controlar el robot en tiempo real
+            </p>
+            <button onClick={handleLogout} className={styles.logoutButton}>
+              🚪 Cerrar sesión
+            </button>
+          </div>
         </motion.div>
       </div>
 
@@ -217,6 +267,7 @@ export default function SimulatorPage() {
               isAnimating={isAnimating}
               isEditMode={isEditMode}
               onCellClick={handleCellClick}
+              lastCommandSuccess={lastCommandSuccess}
             />
           </motion.div>
 
@@ -311,7 +362,7 @@ export default function SimulatorPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
             >
-              Click en las casillas para añadir/quitar obstáculos (máx. 3)
+              Click en las casillas para añadir/quitar obstáculos (máx. 5)
             </motion.div>
           )}
 

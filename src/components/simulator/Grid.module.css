@@ -81,33 +81,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.robotBody {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #00f0ff, #ff00ff);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.robotArrow {
-  font-size: 28px;
-  color: black;
-  font-weight: bold;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.3);
-  }
+  position: relative;
 }
 
 /* Responsive */
@@ -115,15 +89,6 @@
   .cell {
     width: 60px;
     height: 60px;
-  }
-  
-  .robotBody {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .robotArrow {
-    font-size: 22px;
   }
   
   .obstacleIcon {
