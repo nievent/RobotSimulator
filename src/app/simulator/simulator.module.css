@@ -25,12 +25,12 @@
 .header {
   position: relative;
   z-index: 10;
-  padding: 32px 40px 20px;
+  padding: 20px;
 }
 
 .headerContent {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
 }
 
 .headerActions {
@@ -86,20 +86,40 @@
 .content {
   position: relative;
   z-index: 10;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 40px 40px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0 20px 20px;
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
-  height: calc(100vh - 140px);
-  overflow-y: auto;
+  grid-template-columns: 1fr 380px 380px;
+  gap: 20px;
+  height: calc(100vh - 120px);
+  overflow: auto;
+}
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.3);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.5);
 }
 
 .mainSection {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  align-items: center;
+  justify-content: center;
 }
 
 .controls {
@@ -108,6 +128,8 @@
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 24px;
+  width: 100%;
+  max-width: 700px;
 }
 
 .controlsTitle {
@@ -288,6 +310,32 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+}
+
+/* Scrollbar personalizado para el sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 255, 0.3);
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 0, 255, 0.5);
+}
+
+.historyColumn {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .error {
@@ -367,46 +415,45 @@
 }
 
 /* Responsive */
+@media (max-width: 1400px) {
+  .content {
+    grid-template-columns: 1fr 340px 340px;
+  }
+}
+
 @media (max-width: 1200px) {
   .content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 320px;
   }
   
-  .sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  
-  .info {
-    grid-column: 1 / -1;
+  .historyColumn {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 24px 20px 16px;
+    padding: 16px;
   }
   
   .title {
-    font-size: 28px;
+    font-size: 24px;
   }
   
   .titleIcon {
-    font-size: 32px;
+    font-size: 28px;
   }
   
   .subtitle {
     font-size: 12px;
-    padding-left: 44px;
   }
   
   .content {
-    padding: 0 20px 20px;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    padding: 0 16px 16px;
   }
   
   .sidebar {
-    grid-template-columns: 1fr;
+    display: none;
   }
 }

@@ -41,7 +41,7 @@ export default function Robot3D({ direction, isAnimating, lastCommandSuccess }: 
       antialias: true, 
       alpha: true 
     })
-    renderer.setSize(80, 80)
+    renderer.setSize(120, 120)
     renderer.setClearColor(0x000000, 0)
     containerRef.current.appendChild(renderer.domElement)
     rendererRef.current = renderer
@@ -247,5 +247,5 @@ export default function Robot3D({ direction, isAnimating, lastCommandSuccess }: 
     }
   }, [isAnimating, lastCommandSuccess])
 
-  return <div ref={containerRef} style={{ width: '80px', height: '80px' }} />
+  return <div ref={containerRef} style={{ width: '120px', height: '120px' }} />
 }

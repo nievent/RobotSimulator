@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import DarkVeil from '@/components/DarkVeil'
 import Grid from '@/components/simulator/Grid'
 import SimulationStats from '@/components/simulator/SimulationStats'
-import { simulateRobot } from '@/lib/actions/simulate'
+import SimulationHistory from '@/components/simulator/SimulationHistory'
+import { saveSimulation } from '@/lib/actions/simulate'
 import { createClient } from '@/lib/supabase/client'
 import styles from './simulator.module.css'
 
@@ -203,7 +204,13 @@ export default function SimulatorPage() {
     }
 
     try {
-      await simulateRobot(commandHistory)
+      await saveSimulation(
+        commandHistory,
+        robotPosition,
+        robotDirection,
+        successes,
+        failures
+      )
       alert('¡Simulación guardada en el historial!')
     } catch (error) {
       alert('Error al guardar: ' + (error instanceof Error ? error.message : 'Error desconocido'))
@@ -212,9 +219,16 @@ export default function SimulatorPage() {
 
   const handleLogout = async () => {
     const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      console.error('Error al cerrar sesión:', error)
+      alert('Error al cerrar sesión')
+      return
+    }
+    
+    // Forzar redirección
+    window.location.href = '/login'
   }
 
   return (
@@ -251,8 +265,9 @@ export default function SimulatorPage() {
         </motion.div>
       </div>
 
-      {/* Contenido principal */}
+      {/* Contenido principal - 3 columnas */}
       <div className={styles.content}>
+        {/* COLUMNA 1: Grid y Controles */}
         <div className={styles.mainSection}>
           {/* Grid del robot */}
           <motion.div
@@ -313,7 +328,7 @@ export default function SimulatorPage() {
           </motion.div>
         </div>
 
-        {/* Sidebar con stats */}
+        {/* COLUMNA 2: Stats, Botones e Info */}
         <div className={styles.sidebar}>
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -409,6 +424,16 @@ export default function SimulatorPage() {
             </ul>
           </motion.div>
         </div>
+
+        {/* COLUMNA 3: Historial completo */}
+        <motion.div
+          className={styles.historyColumn}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1 }}
+        >
+          <SimulationHistory />
+        </motion.div>
       </div>
     </div>
   )
