@@ -7,6 +7,8 @@ import DarkVeil from '@/components/DarkVeil'
 import Grid from '@/components/simulator/Grid'
 import SimulationStats from '@/components/simulator/SimulationStats'
 import SimulationHistory from '@/components/simulator/SimulationHistory'
+import SaveModal from '@/components/simulator/SaveModal'
+import RobotChat from '@/components/simulator/RobotChat'
 import { saveSimulation } from '@/lib/actions/simulate'
 import { createClient } from '@/lib/supabase/client'
 import styles from './simulator.module.css'
@@ -49,6 +51,10 @@ export default function SimulatorPage() {
   const [lastCommand, setLastCommand] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
   const [lastCommandSuccess, setLastCommandSuccess] = useState<boolean | undefined>(undefined)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalSuccess, setModalSuccess] = useState(false)
+  const [modalMessage, setModalMessage] = useState('')
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   // Verificar sesión al montar
   useEffect(() => {
@@ -140,9 +146,9 @@ export default function SimulatorPage() {
     setLastCommandSuccess(true)
   }, [robotDirection, robotPosition, obstacles])
 
-  // Event listener para el teclado (solo si NO está en modo edición)
+  // Event listener para el teclado (solo si NO está en modo edición NI en el chat)
   useEffect(() => {
-    if (isEditMode) return // No escuchar teclas en modo edición
+    if (isEditMode || isChatOpen) return // No escuchar teclas si está editando o en el chat
     
     const handleKeyPress = (e: KeyboardEvent) => {
       const key = e.key.toUpperCase()
@@ -167,7 +173,7 @@ export default function SimulatorPage() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [moveForward, turnLeft, turnRight, isEditMode])
+  }, [moveForward, turnLeft, turnRight, isEditMode, isChatOpen])
 
   const handleReset = () => {
     setRobotPosition({ x: 0, y: 0 })
@@ -199,7 +205,9 @@ export default function SimulatorPage() {
 
   const handleSaveSimulation = async () => {
     if (commandHistory.length === 0) {
-      alert('No hay comandos para guardar')
+      setModalSuccess(false)
+      setModalMessage('No hay comandos para guardar')
+      setModalOpen(true)
       return
     }
 
@@ -211,9 +219,20 @@ export default function SimulatorPage() {
         successes,
         failures
       )
-      alert('¡Simulación guardada en el historial!')
+      
+      // Refrescar el historial
+      const w = window as Window & { refreshSimulationHistory?: () => void }
+      if (w.refreshSimulationHistory) {
+        w.refreshSimulationHistory()
+      }
+      
+      setModalSuccess(true)
+      setModalMessage('Tu simulación se ha guardado correctamente en el historial')
+      setModalOpen(true)
     } catch (error) {
-      alert('Error al guardar: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+      setModalSuccess(false)
+      setModalMessage(error instanceof Error ? error.message : 'Error desconocido')
+      setModalOpen(true)
     }
   }
 
@@ -435,6 +454,27 @@ export default function SimulatorPage() {
           <SimulationHistory />
         </motion.div>
       </div>
+
+      {/* Modal de guardado */}
+      <SaveModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        success={modalSuccess}
+        message={modalMessage}
+      />
+
+      {/* Chat con IA */}
+      <RobotChat
+        robotState={{
+          position: robotPosition,
+          direction: robotDirection,
+          obstacles: obstacles,
+          commandHistory: commandHistory,
+          successes: successes,
+          failures: failures
+        }}
+        onOpenChange={setIsChatOpen}
+      />
     </div>
   )
 }

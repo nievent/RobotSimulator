@@ -18,9 +18,21 @@ interface Simulation {
 export default function SimulationHistory() {
   const [simulations, setSimulations] = useState<Simulation[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     loadHistory()
+  }, [refreshKey])
+
+  // Exponer función de refresh globalmente
+  useEffect(() => {
+    const w = window as Window & { refreshSimulationHistory?: () => void }
+    w.refreshSimulationHistory = () => {
+      setRefreshKey(prev => prev + 1)
+    }
+    return () => {
+      delete w.refreshSimulationHistory
+    }
   }, [])
 
   const loadHistory = async () => {
