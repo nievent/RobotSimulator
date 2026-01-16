@@ -269,6 +269,3 @@ Esto permite que Gemini tenga contexto total y pueda calcular rutas, detectar co
 - GitHub: [@nievent](https://github.com/nievent/)
 - Email: nieves.venturav@gmail.com
 
-## Link del proyecto en Vercel
-
-- https://robot-simulator-nievent-o1x4ygztb-nievents-projects.vercel.app/login
