@@ -20,55 +20,88 @@ export async function chatWithRobot(message: string, robotState: RobotState) {
       }
     }
 
-    const prompt = `Eres un asistente experto de un robot en una cuadrícula 5x5. Debes dar respuestas útiles y completas.
+    // Crear un JSON más detallado con TODA la información
+    const gameState = {
+      grid: {
+        size: 5,
+        coordinates: "De (0,0) a (4,4)",
+        robotStart: { x: 0, y: 0 }
+      },
+      robot: {
+        currentPosition: robotState.position,
+        currentDirection: robotState.direction,
+        facingAngle: {
+          Norte: "Arriba (Y disminuye)",
+          Este: "Derecha (X aumenta)", 
+          Sur: "Abajo (Y aumenta)",
+          Oeste: "Izquierda (X disminuye)"
+        }[robotState.direction]
+      },
+      obstacles: robotState.obstacles.length > 0 
+        ? robotState.obstacles.map(o => `Obstáculo en (${o.x},${o.y})`)
+        : ["No hay obstáculos"],
+      commandHistory: {
+        total: robotState.commandHistory.length,
+        commands: robotState.commandHistory || "ninguno",
+        breakdown: robotState.commandHistory.split('').map(c => 
+          c === 'A' ? 'Avanzar' : c === 'I' ? 'Girar izquierda' : 'Girar derecha'
+        )
+      },
+      statistics: {
+        successfulMoves: robotState.successes,
+        failedMoves: robotState.failures,
+        successRate: robotState.commandHistory.length > 0
+          ? `${Math.round((robotState.successes / robotState.commandHistory.length) * 100)}%`
+          : "0%"
+      }
+    }
 
-ESTADO ACTUAL DEL ROBOT:
-- Posición actual: (${robotState.position.x}, ${robotState.position.y})
-- Mirando hacia: ${robotState.direction}
-- Comandos ya ejecutados: ${robotState.commandHistory || 'Ninguno todavía'}
-- Movimientos exitosos: ${robotState.successes}
-- Movimientos fallidos: ${robotState.failures}
-- Total de comandos: ${robotState.commandHistory.length}
+    const prompt = `Eres un asistente experto en un simulador de robot. Analiza CUIDADOSAMENTE el siguiente JSON y responde con PRECISIÓN.
 
-OBSTÁCULOS EN EL MAPA:
-${robotState.obstacles.length > 0 
-  ? robotState.obstacles.map(o => `- Obstáculo en posición (${o.x}, ${o.y})`).join('\n')
-  : '- NO hay obstáculos en el mapa'}
+ESTADO COMPLETO DEL JUEGO:
+${JSON.stringify(gameState, null, 2)}
 
-REGLAS DEL JUEGO:
-- Cuadrícula de 5x5 casillas (coordenadas van de 0 a 4 en X e Y)
-- El robot inicia en (0,0) mirando al Norte
-- Comandos disponibles:
-  * A = Avanzar una casilla hacia adelante
-  * I = Girar 90° a la izquierda
-  * D = Girar 90° a la derecha
-- Si el robot intenta avanzar hacia un obstáculo o fuera del borde, el movimiento FALLA pero continúa con el siguiente comando
-- Las direcciones son: Norte (arriba, Y-1), Este (derecha, X+1), Sur (abajo, Y+1), Oeste (izquierda, X-1)
+REGLAS IMPORTANTES:
+1. La cuadrícula es 5x5, con coordenadas de (0,0) a (4,4)
+2. El robot empieza en (0,0) mirando al Norte
+3. Comandos disponibles:
+   - A = Avanzar UNA casilla hacia adelante en la dirección actual
+   - I = Girar 90° a la IZQUIERDA
+   - D = Girar 90° a la DERECHA
+4. Sistema de coordenadas:
+   - Norte: Y-1 (hacia arriba)
+   - Este: X+1 (hacia derecha)
+   - Sur: Y+1 (hacia abajo)
+   - Oeste: X-1 (hacia izquierda)
+5. Si el robot intenta avanzar a un obstáculo o fuera del tablero (X<0, X>4, Y<0, Y>4), el movimiento FALLA pero continúa con el siguiente comando
 
-INSTRUCCIONES PARA TI:
-- Responde de forma clara, útil y completa
-- Analiza bien el estado y el entorno del robot antes de responder
-- Si te preguntan sobre movimientos, explica qué pasaría y por qué
-- Si te piden sugerencias, da comandos específicos con explicación
-- Usa 2-4 líneas de texto, sé conciso pero informativo
-- Usa emojis ocasionalmente: 🤖 (robot), 🎯 (objetivo), ⚠️ (peligro), ✅ (éxito), ❌ (fallo), 🔄 (girar), ⬆️➡️⬇️⬅️ (direcciones)
+PREGUNTA DEL USUARIO: "${message}"
 
-PREGUNTA DEL USUARIO: ${message}
+INSTRUCCIONES PARA RESPONDER:
+- Lee el JSON completamente antes de responder
+- Calcula posiciones exactas cuando sea relevante
+- Si mencionas coordenadas, usa el formato (X,Y)
+- Si sugieres comandos, explica brevemente qué harán
+- Usa emojis: 🤖 (robot), 🎯 (objetivo), ⚠️ (obstáculo), ✅ (ok), ❌ (fallo), ⬆️➡️⬇️⬅️ (direcciones)
+- Responde en 2-4 líneas, claro y directo
+- IMPORTANTE: Verifica tus cálculos dos veces antes de responder
 
-Responde ahora de forma completa y útil:`
+Responde ahora de forma precisa y útil:`
 
-    console.log('🤖 Intentando conectar con Gemini API...')
+    console.log('🤖 Llamando a Gemini 3 Pro...')
 
-    const urls = [
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    // Intentar con Gemini 3 Pro primero, luego fallback a otros modelos
+    const modelsToTry = [
+      'gemini-3-pro-preview',
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
     ]
 
-    for (const url of urls) {
+    for (const modelName of modelsToTry) {
       try {
-        const modelName = url.split('/models/')[1].split(':')[0]
-        console.log(`📡 Probando: ${modelName}`)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`
+        
+        console.log(`📡 Probando modelo: ${modelName}`)
         
         const response = await fetch(url, {
           method: 'POST',
@@ -80,52 +113,45 @@ Responde ahora de forma completa y útil:`
               parts: [{ text: prompt }]
             }],
             generationConfig: {
-              temperature: 0.8,
-              maxOutputTokens: 250,
+              temperature: 0.7,
+              maxOutputTokens: 2000, 
+              topP: 0.95,
             }
           })
         })
 
         const data = await response.json()
-        console.log(`📥 Status: ${response.status}`)
         
         if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
           const text = data.candidates[0].content.parts[0].text
-          console.log(`✅ ¡Funciona con ${modelName}!`)
-          console.log(`📝 Respuesta: ${text.substring(0, 100)}...`)
+          
+          // Verificar si la respuesta está completa
+          const finishReason = data.candidates[0].finishReason
+          console.log(`✅ Respuesta con ${modelName}`)
+          console.log(`📏 Longitud: ${text.length} caracteres`)
+          console.log(`🏁 Finish reason: ${finishReason}`)
+          console.log(`📝 Texto completo: ${text}`)
+          
+          // Si se cortó por longitud, advertir
+          if (finishReason === 'MAX_TOKENS') {
+            console.log('⚠️ Respuesta cortada por MAX_TOKENS')
+          }
+          
           return { success: true, message: text }
         }
         
         if (!response.ok) {
-          console.log(`❌ Error ${response.status}:`, data.error?.message || 'Sin detalles')
+          console.log(`❌ ${modelName} falló:`, data.error?.message || 'Sin detalles')
         }
         
       } catch (err) {
-        console.log(`❌ Error de red:`, err instanceof Error ? err.message : 'Error desconocido')
+        console.log(`❌ Error con ${modelName}:`, err instanceof Error ? err.message : 'Error desconocido')
       }
-    }
-
-    // Si llegamos aquí, intentemos listar los modelos disponibles
-    console.log('🔍 Intentando listar modelos disponibles...')
-    try {
-      const listResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-      )
-      const listData = await listResponse.json()
-      
-      if (listResponse.ok && listData.models) {
-        console.log('📋 Modelos disponibles:')
-        listData.models.forEach((m: { name: string }) => {
-          console.log(`  - ${m.name}`)
-        })
-      }
-    } catch (listErr) {
-      console.log('No se pudo listar modelos:', listErr)
     }
 
     return { 
       success: false, 
-      message: 'No se pudo conectar con ningún modelo de Gemini. Verifica tu API Key y que no tenga restricciones en Google AI Studio.' 
+      message: 'No se pudo conectar con Gemini. Verifica tu API Key.' 
     }
     
   } catch (error) {

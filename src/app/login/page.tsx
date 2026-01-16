@@ -46,7 +46,6 @@ export default function AuthPage() {
 
   return (
     <div className={styles.container}>
-      {/* DarkVeil - TODO EL FONDO */}
       <div className={styles.background}>
         <DarkVeil
           hueShift={335}
